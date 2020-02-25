@@ -1,0 +1,43 @@
+name: harmonyPlugin
+main: cn.teagrus.harmonyplugin.HarmonyPlugin
+version: 0.0.1
+author: Teagrus
+commands:
+  setblackhouseloc:
+    description: This command is used to set the location of small black house.
+    usage: /<command> x y z
+    permission: harmonyPlugin.police
+    permission-message: You need op or a police lisense to use this command
+    
+  senttoblackhouse:
+    description: This command is used to sent someone to small black house;
+    usage: /<command> <playerName>
+    permission: harmonyPlugin.police
+    permission-message: You need op or a police lisense to use this command
+    
+  releasefromblackhouse: 
+    description: This command is used to release someone from small black house;
+    usage: /<command> playerName;
+    permission: harmonyPlugin.police
+    permission-message: You need op or a police lisense to use this command
+    
+  hangupmode:
+    description: This command is used on occasion to when you want to hang up your game;
+    usage: /<command>;
+    permission: harmonyPlugin.experienceImproveProject
+    permission-message: Everyone can use this command
+    
+  closehangupmode:
+    description: This command is used on occasion to when you stop hanging up your game;
+    usage: /<command>;
+    permission: harmonyPlugin.experienceImproveProject
+    permission-message: Everyone can use this command
+    
+permissions:
+  harmonyPlugin.police:
+    description: the permission for blackhouse operation
+    default: op
+    
+  harmonyPlugin.experienceImproveProject:
+    description: the permission to improve experience;
+    default: true
