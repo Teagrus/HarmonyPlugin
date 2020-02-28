@@ -1,32 +1,57 @@
 package cn.teagrus.harmonyplugin;
 
-import java.awt.HeadlessException;
+
+import java.io.File;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.EndGateway;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitScheduler;
 
 public final class HarmonyPlugin extends JavaPlugin {
 	private BlackHouse bhouse;
-	
+	private LocationService lservice;
 	//Override
 	public void onEnable() {
 		getLogger().info("Start to initial harmonyplugin");
-		this.bhouse = new BlackHouse();
+		Bukkit.broadcastMessage("Plugin initial");
+		//Check Directories
+		this.dirMake();
+		//initial BlackHouse::
+		try {
+			this.bhouse = new BlackHouse();
+			this.bhouse.initialize();
+		}catch (Exception e) {
+			getLogger().info("!!!!!BlackHouse Initialization failed!!!!!");
+			getLogger().info("-Check Whether the program are allowed to read file");
+			getLogger().info("-Or the file harmonyPlugin/blackHouse/data.yml is correct(You may solve problem by deleting it)");
+		}
+		//initialize location service
+		try {
+			this.lservice = new LocationService();
+			this.lservice.initialize();
+		}catch (Exception e) {
+			getLogger().info("!!!!!LocationService Initialization failed!!!!!");
+			getLogger().info("-Check Whether the program are allowed to read file");
+			getLogger().info("-Or the file harmonyPlugin/LocationService/publicLocations.yml is correct(You may solve problem by deleting it)");
+		}
+		
+		//set BlackHouse Commands;
+		this.getCommand("setblackhouseloc").setExecutor(this.bhouse.getExecutor());
+		this.getCommand("senttoblackhouse").setExecutor(this.bhouse.getExecutor());
+		this.getCommand("releasefromblackhouse").setExecutor(this.bhouse.getExecutor());
+		
+		//set locationServiceCommand
+		this.getCommand("location").setExecutor(this.lservice.getExecutor());
+		
+		
 		
 		CommandExecutor excutor = new HarmonyCommandExe(this);
-		//SetCommandExecuters
-		this.getCommand("setblackhouseloc").setExecutor(excutor);
-		this.getCommand("senttoblackhouse").setExecutor(excutor);
-		this.getCommand("releasefromblackhouse").setExecutor(excutor);
 		this.getCommand("hangupmode").setExecutor(excutor);
 		this.getCommand("closehangupmode").setExecutor(excutor);
 
@@ -37,6 +62,21 @@ public final class HarmonyPlugin extends JavaPlugin {
 	
 	public void onDisable() {
 		getLogger().info("Disabling harmonyplugin");
+		//close bh
+		try {
+			this.bhouse.saveData();
+			getLogger().info("----BlackHouse Data saved----");
+		}catch (Exception e) {
+			getLogger().info("!!!!!BlackHouse Data save error!!!!!");	
+		}
+		
+		try {
+			this.bhouse.saveData();
+			getLogger().info("----Location Service Data saved----");
+		}catch (Exception e) {
+			getLogger().info("!!!!!Location Service save error!!!!!");	
+		}
+		
 	}
 	
 	
@@ -49,6 +89,21 @@ public final class HarmonyPlugin extends JavaPlugin {
 		return bhouse;
 	};
 	
+	private void dirMake() {
+		File pathMain = new File(Configs.PLUGIN_SAVE_PATH);
+		if (!pathMain.exists()) {
+			pathMain.mkdir();
+		}
+		File pathBlackHouse = new File(Configs.PLUGIN_SAVE_PATH + Configs.B_H_PATH);
+		if (!pathBlackHouse.exists()) {
+			pathBlackHouse.mkdir();
+		}
+		File pathLocationService = new File(Configs.PLUGIN_SAVE_PATH + Configs.L_S_PATH);
+		if (!pathLocationService.exists()) {
+			pathLocationService.mkdir();
+		}
+	}
+	
 }
 
 
@@ -58,88 +113,8 @@ class HarmonyCommandExe implements CommandExecutor  {
 		this.thePlugin = plu;
 	}
 	
-	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (cmd.getName().equalsIgnoreCase("setblackhouseloc")) {
-			//make sure args length
-			if (args.length == 3) {
-				int isSuccess = 1, xt = 0, yt = 255, zt = 0;
-				//check the validity of loc
-				try {
-					xt = Integer.parseInt(args[0]);
-					yt = Integer.parseInt(args[1]);
-					zt = Integer.parseInt(args[2]);
-					isSuccess = 1;
-				}catch (Exception except) {
-					// TODO: handle exception
-					sender.sendMessage("错误的坐标格式");
-					isSuccess = 0;
-				}
-				if (isSuccess == 1) {
-					thePlugin.getBlackHouse().setloc(xt, yt, zt);
-					return true;
-				}
-			} else {
-				sender.sendMessage("指令格式错误\n");
-			}
-		} else if (cmd.getName().equalsIgnoreCase("senttoblackhouse")) {
-			//make sure args length
-			if (args.length == 1) {
-				Player targetP = Bukkit.getPlayer(args[0]);
-				if (targetP != null) {
-					if (targetP.isOnline()) {
-						targetP.setInvulnerable(true);
-						targetP.setSleepingIgnored(true);
-						targetP.getInventory().remove(Material.ENDER_PEARL);
-						targetP.getInventory().remove(Material.CHORUS_FRUIT);
-						targetP.sendMessage("您已被关入小黑屋");
-						targetP.setGameMode(GameMode.ADVENTURE);
-						World tarW = Bukkit.getWorld("world");
-						Location loc = new Location(tarW, thePlugin.getBlackHouse().getx(), thePlugin.getBlackHouse().gety(), thePlugin.getBlackHouse().getz());
-						targetP.teleport(loc);
-						sender.sendMessage(targetP.getName() + "已入狱");
-						return true;
-					} else {
-						sender.sendMessage("所选定的玩家不存在或不在线");
-					}
-				} else {
-					sender.sendMessage("所选定的玩家不存在或不在线");
-				}
-				
-			} else {
-				sender.sendMessage("指令格式错误\n");
-			}
-			
-		} else if (cmd.getName().equalsIgnoreCase("releasefromblackhouse")){
-			//make sure args length
-			if (args.length == 1) {
-				Player targetP = Bukkit.getPlayer(args[0]);
-				if (targetP != null) {
-					if (targetP.isOnline()) {
-						if (targetP.isInvulnerable()) {
-							Location loc = Bukkit.getWorld("world").getSpawnLocation();
-							targetP.teleport(loc);
-							targetP.setInvulnerable(false);
-							targetP.setSleepingIgnored(false);
-							targetP.setGameMode(GameMode.SURVIVAL);							
-							targetP.sendMessage("您已出狱");
-							sender.sendMessage("已释放该玩家");
-						} else {
-							sender.sendMessage("这名玩家尚未被送进小黑屋");
-						}
-						return true;
-					} else {
-						sender.sendMessage("所选定的玩家不存在或不在线");
-					}
-				} else {
-					sender.sendMessage("所选定的玩家不存在或不在线");
-				}
-				
-			} else {
-				sender.sendMessage("指令格式错误\n");
-			}
-			
-		} else if (cmd.getName().equalsIgnoreCase("hangupmode")) {
+		if (cmd.getName().equalsIgnoreCase("hangupmode")) {
 			//make sure args length
 			if (args.length == 0) {
 				if (sender instanceof Player) {
@@ -163,38 +138,11 @@ class HarmonyCommandExe implements CommandExecutor  {
 			} else {
 				sender.sendMessage("指令格式错误\n");
 			}
-			
-			
 		}
 		return false;
 	}
 }
 
-class BlackHouse {
-	
-	private int xposi;
-	private int yposi;
-	private int zposi;
-	
-	public void setloc(int x, int y, int z) {
-		this.xposi = x;
-		this.yposi = y;
-		this.zposi = z;
-	}
-	public int getx() {
-		return xposi;
-	}
-	public int gety() {
-		return yposi;
-	}
-	public int getz() {
-		return zposi;
-	}
-	public BlackHouse() {
-		this.xposi = 0;
-		this.yposi = 255;
-		this.zposi = 0;
-	}
-}
+
 
 

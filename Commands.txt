@@ -1,0 +1,35 @@
+Here are all commands this plugin implements;
+
+-BlackHousePart-
+	-setblackhouseloc
+	-settoblackhouse
+	-releasefromblackhouse
+	
+	!!Restruction of this part is taken into consideration
+
+-experienceImproveProject-
+    -hangupmode
+    -closehangupmode
+	!!Restruction of this part is taken into consideration
+	
+-LocationService
+	-location
+		Allplayers:
+		-set <pointName>  --Use Player's location with custom name;
+		-set <pointName> <x> <y> <z> --Use XYZ and player's world with custom name;
+		-set <pointName> <x> <y> <z> <world> --Use XYZ and cuntom world with custom name;
+		
+		
+		-find --print all private custom locations;
+		-find <public> --print all public locations;
+		-find <all> --print all location (public and private)
+		-find <contain> <TargetString> --print all location whose name contains targetString;
+		
+		-delete <name> --delete location record with specific name;
+		
+		OPS:
+		-tp <locationName> --tp to specific location
+		-setp <pointName>  --Use Player's location with custom name;
+		-setp <pointName> <x> <y> <z> --Use XYZ and player's world with custom name;
+		-setp <pointName> <x> <y> <z> <world> --Use XYZ and cuntom world with custom name;
+		-deletep <name>

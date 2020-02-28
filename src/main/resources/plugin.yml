@@ -33,6 +33,12 @@ commands:
     permission: harmonyPlugin.experienceImproveProject
     permission-message: Everyone can use this command
     
+  location:
+    description: This is the main command for location service
+    usage: use this command with sub commands, set, find, delete
+    permission: harmonyPlugin.locationService
+    permission-message: Everyone can use this command
+    
 permissions:
   harmonyPlugin.police:
     description: the permission for blackhouse operation
@@ -41,3 +47,23 @@ permissions:
   harmonyPlugin.experienceImproveProject:
     description: the permission to improve experience;
     default: true
+  
+  harmonyPlugin.locationService:
+    default: true
+  harmonyPlugin.locationService.set:
+    default: true
+  harmonyPlugin.locationService.find:
+    default: true
+  harmonyPlugin.locationService.delete:
+    default: true
+  harmonyPlugin.locationService.tp:
+    default: op
+  harmonyPlugin.locationService.setp:
+    default: op
+  harmonyPlugin.locationService.deletep:
+    default: op
+      
+    
+    
+    
+    
